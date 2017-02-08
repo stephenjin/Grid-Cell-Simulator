@@ -1,0 +1,67 @@
+
+	/* distance between grid cells is scale/SVList.moduleSize */
+	/* TODO: init each individual grid cells */
+	
+	public GridModule(double scale){
+		this.scale = scale;
+		this.distanceBetweenCells = scale/SVList.moduleSize;
+		xMod = new GridCell[SVList.moduleSize];
+		yMod = new GridCell[SVList.moduleSize];
+	}
+
+	
+	/* name is in the form 'A5' where a~h and 1~8 */
+	public GridCell grabGCell(String name){
+		int[] index = grabIndexCell(name);
+		return GCells[index[0]][index[1]];
+	}
+	public int[] grabIndexCell(String name){
+		int x = name.charAt(0) - 'a';
+		int y = name.charAt(1) - 0x30;
+		int[] value = {x,y};
+		return value;
+	}
+	
+	/* within each tick, this function will be called
+	 * it will calculate its relative position, 
+	 * then trigger the grid cell that the agent passes through
+	 */
+	public void tick(double speed, double angle){
+		int[] index = grabIndexCell(triggeredCell);
+		int[] move = relativePosition(speed, angle);
+		
+		GridCell gPrev = GCells[index[0]][index[1]];
+		int x = (index[0] + move[0]) % 8;
+		int y = (index[1] + move[1]) % 8;
+		GridCell gNext = GCells[x][y];
+		
+		gPrev.trigger = false;
+		gNext.trigger = true;
+	}
+	
+	/* working within a parallelogram 
+	 * calculates relativePosition and the next GridCell to trigger
+	 * based on speed and angle of the agent 
+	 */
+	
+	/* BUG TODO: we need to calculate relative position with starting position
+	 * what if the agent doesn't move enough to move to a different grid cell?
+	 */
+	public int[] relativePosition(double speed, double angle){
+		double angle90 = convertfrom60to90(angle);
+		double distanceX = speed * Math.cos(angle90);
+		double distanceY = speed * Math.sin(angle90);
+		
+		/* this is how much agent travelled in terms of x and y */
+		double xIndex = distanceX/(distanceBetweenCells);
+		double yIndex = distanceY/(distanceBetweenCells);
+		/* TODO: convert these index to phaseshifts of grid cell*/
+		int x = (int)Math.floor(xIndex);
+		int y = (int)Math.floor(yIndex);
+		int[] value = {x,y};
+		return value;
+	}
+	
+	private double convertfrom60to90(double angle){
+		return 3/2 * angle;
+	}
